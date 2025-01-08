@@ -1,0 +1,5 @@
+# simple api's on pokemon data
+To run the serer:
+"""
+uvicorn main:app --reload
+"""

@@ -1,9 +1,8 @@
 from pydantic import BaseModel
-from src.orm import SessionLocal
+from sqlalchemy.orm import Session
+from .orm import SessionLocal
 
-
-
-class PokemonCreate(BaseModel):
+class PokemonBase(BaseModel):
     number: int
     name: str
     type1: str
@@ -18,6 +17,14 @@ class PokemonCreate(BaseModel):
     generation: int
     legendary: bool
 
+class PokemonCreate(PokemonBase):
+    pass
+
+class Pokemon(PokemonBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 def get_db():
     db = SessionLocal()

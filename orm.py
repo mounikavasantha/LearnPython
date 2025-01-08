@@ -23,11 +23,14 @@ class Pokemon(Base):
     legendary = Column(Boolean)
 
 
+# Database connection
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+psycopg2://Mounika:Password@localhost:5432/pokemon_data"
 )
 engine = create_engine(DATABASE_URL)
 
+# Create a session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Create the tables
 Base.metadata.create_all(bind=engine)
