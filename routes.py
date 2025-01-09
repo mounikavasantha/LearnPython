@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List,Any
+from typing import List,Any,Optional
 from sqlalchemy.orm import Session
 from crud import Crud
-from schemas import PokemonResponse, InputModification  # Change to absolute import
+from schemas import (
+    PokemonResponse,
+    InputModification,
+    PokemonDataResponse,
+)  # Change to absolute import
 from orm import SessionLocal,Pokemon # Change to absolute import
 
 
@@ -15,11 +19,6 @@ def get_db():
 
 
 router = APIRouter()
-
-
-# @router.get("/pokemon_data", response_model=List[PokemonResponse])
-# def read_all_pokemon_data(db: Session = Depends(get_db)):
-#     return crud.get_all_data(db)
 
 
 @router.get(
@@ -54,7 +53,6 @@ router = APIRouter()
 def read_pokemon_data(
     id: int,
     db: Session = Depends(get_db),
-    # key: str = Depends(header_scheme),
 ) -> Any:
     pokemon_data = Crud.get_all_data(id, db)
     if not pokemon_data:
@@ -172,5 +170,8 @@ def delete_pokemon_data(
         "message": "id removed from database successfully",
     }
 
+@router.get("/pokemon/",summary="retriving all the data from the pokemon table",response_model= PokemonDataResponse)
+def read_data(name:Optional[str]=None,db:Session=Depends(get_db),page:int=1,per_page:int=10):
+    data=Crud.get_data(name,db,page,per_page)
+    return data
 
-    

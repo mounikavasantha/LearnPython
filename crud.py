@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from orm import Pokemon
 from schemas import PokemonResponse
-from fastapi import HTTPException
+from fastapi import HTTPException,Depends
+
 
 class Crud:
 
@@ -76,5 +77,22 @@ class Crud:
             db.rollback()
             raise e
 
+    def get_data(name, db, page, per_page):
+        try:
+            query = db.query(Pokemon)
+            if name:
+                query = query.filter(Pokemon.name == name)
 
+            total = query.count()
+            paginated_result = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            return {
+                "total": total,
+                "page": page,
+                "per_page": per_page,
+                "data": [PokemonResponse.model_validate(pokemon) for pokemon in paginated_result]
+            }
+        except Exception as e:
+            print(f"Error retrieving data: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 crud = Crud()

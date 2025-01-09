@@ -1,12 +1,12 @@
 from pydantic import BaseModel,ConfigDict
-from typing import Optional
+from typing import Optional,List
 
 
 class PokemonResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    number: int
+    number: Optional[int] = None
     name: str
     type1: str
     type2: Optional[str] = None
@@ -36,7 +36,11 @@ class InputModification(BaseModel):
     generation: Optional[int] = None
     legendary: Optional[int] = None
 
-
+class PokemonDataResponse(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    data: List[PokemonResponse]
 
 
 
