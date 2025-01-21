@@ -30,3 +30,17 @@ select title,year from movies where year between 2000 and 2010
 select title,year from movies where year < 2000 or year> 2010
 select title,year from movies where year <=2003
 
+
+select title,director from movies where title = 'Toy Story';
+select title,director from movies where director = 'John Lasseter'
+select title,director from movies where director != 'John Lasseter'
+select title from movies where title like 'WALL-%';
+
+select distinct director from movies;
+select title,year from movies order by year desc limit 4
+select title,year from movies order by year asc offset 1 limit 5
+select title,year from movies order by year asc offset 5 limit 5
+
+
+
+
