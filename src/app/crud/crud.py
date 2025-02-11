@@ -1,68 +1,86 @@
 from typing import List
-from src.app.models.model import Pokemon
+from src.app.database.orm import Pokemon
+from sqlalchemy.orm import Session
+from src.app.models.model import PokemonResponse, PokemonSchema
+from fastapi import HTTPException
+import traceback
 
 
 class CRUD:
-    def __init__(self):
-        self.pokemon_data: List[Pokemon] = []
 
-    def get_pokemondata(self, id: int):
+    def get_pokemondata(self, id: int, db: Session):
         try:
-            print(f"Searching for Pokemon with id: {id}")
-            print(f"Current Pokemon data: {self.pokemon_data}")
-            result = next(
-                (pokemon for pokemon in self.pokemon_data if pokemon.id == id), None
-            )
+            result = db.query(Pokemon).filter(Pokemon.id == id).first()
+            if not result:
+                raise HTTPException(
+                    status_code=404, detail="Pokemon not found for the id"
+                )
             print(f"Found Pokemon: {result}")
+            return result
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            print(traceback.format_exc())
+            raise HTTPException(status_code=500, detail="Internal Server Error")
+
+    def create_pokemondata(self, payload: PokemonSchema, db: Session):
+        try:
+            # Check if the Pokemon with the given ID already exists
+            existing_pokemon = (
+                db.query(Pokemon).filter(Pokemon.id == payload.id).first()
+            )
+            if existing_pokemon:
+                raise HTTPException(
+                    status_code=404, detail="Pokemon with this ID already exists"
+                )
+
+            new_pokemon = Pokemon(**payload.dict(exclude_unset=True))
+            db.add(new_pokemon)
+            db.commit()
+            db.refresh(new_pokemon)
+            return PokemonResponse(
+                message="Pokemon data created successfully",
+
+            )
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            db.rollback()
+            print(f"Error: {str(e)}")
+            print(traceback.format_exc())
+            return PokemonResponse(message="Error creating Pokemon data", data=None)
+    def get_all_pokemondata(self, db: Session):
+        try:
+            result=db.query(Pokemon).all()
             return result
         except Exception as e:
             return e
 
-    def create_pokemondata(self, payload: Pokemon):
+    def update_pokemon_data(self, id, payload,db):
         try:
-            if any(pokemon.id == payload.id for pokemon in self.pokemon_data):
-                print(f"Pokemon data already exists: {payload.id}")
-                print(f"Pokemon data after insertion: {self.pokemon_data}")
-                return {"message": f"Pokemon data already exists with id {payload.id}"}
-            self.pokemon_data.append(payload)
-            print(f"Pokemon data after insertion: {self.pokemon_data}")
-            return {"message": "Pokemon data created successfully"}
+            existing_pokemon = (
+                db.query(Pokemon).filter(Pokemon.id == payload.id).first()
+            )
+            new_pokemon = Pokemon(**payload.dict(exclude_unset=True))
+            db.add(new_pokemon)
+            db.commit()
+            db.refresh(new_pokemon)
+            return PokemonResponse(
+                message="Pokemon data updated successfully",
+
+            )
+
         except Exception as e:
             return e
 
-    def get_all_pokemondata(self):
+    def delete_pokemon_data(self, id,db):
         try:
-            print(f"Fetching all Pokemon data: {self.pokemon_data}")
-            return self.pokemon_data
-        except Exception as e:
-            return e
-
-    def update_pokemon_data(self,id,payload):
-        try:
-            for pokemon in self.pokemon_data:
-                if pokemon.id == id:
-                    pokemon.name = payload.name
-                    pokemon.type = payload.type
-                    pokemon.total = payload.total
-                    pokemon.hp = payload.hp
-                    pokemon.attack = payload.attack
-                    pokemon.defense = payload.defense
-                    pokemon.sp_atk = payload.sp_atk
-                    pokemon.sp_def = payload.sp_def
-                    pokemon.speed = payload.speed
-                    pokemon.generation = payload.generation
-                    pokemon.legendary = payload.legendary
-                    return {"message": "Pokemon data updated successfully"}
+            pokemon = db.query(Pokemon).filter(Pokemon.id == id).first()
+            if pokemon:
+                db.query(Pokemon).filter(Pokemon.id == id).delete()
+                db.commit()
+                return {"message": "Pokemon data deleted successfully"}
             return {"message": "Pokemon data not found"}
         except Exception as e:
             return e
-    def delete_pokemon_data(self,id):
-        try:
-            for pokemon in self.pokemon_data:
-                if pokemon.id==id:
-                    self.pokemon_data.remove(pokemon)
-                    return {"message":"Pokemon data deleted successfully"}
-            return {"message":"Pokemon data not found"}
-        except Exception as e:
-            return e
-
