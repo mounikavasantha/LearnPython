@@ -25,3 +25,7 @@ class PokemonResponse(BaseModel):
 
     class Config:
         orm_mode:True
+
+class User(BaseModel):
+    username: str
+    password: str

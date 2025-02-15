@@ -23,6 +23,12 @@ class Pokemon(Base):
     legendary = Column(Boolean)
 
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    password = Column(String)
+    
 # Database connection
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+psycopg2://Mounika:Password@localhost:5432/pokemon_data"
